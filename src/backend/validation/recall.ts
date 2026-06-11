@@ -1,5 +1,5 @@
-import { RecallRequest, ErrorCode } from '@/types';
-import { isValidGame } from './games/games';
+import { isValidGame } from '@/backend/services/games/games';
+import { ErrorCode, RecallRequest } from '@/shared/types';
 
 export function validateRecallRequest(request: RecallRequest): { valid: boolean; error?: ErrorCode; message?: string } {
   // Check for missing fields
@@ -28,18 +28,24 @@ export function validateRecallRequest(request: RecallRequest): { valid: boolean;
   return { valid: true };
 }
 
-export function validateLLMResponse(response: any): boolean {
+export function validateLLMResponse(response: unknown): boolean {
   if (!response || typeof response !== 'object') {
     return false;
   }
 
+  const candidate = response as {
+    summary?: Record<string, unknown>;
+    nextSteps?: Record<string, unknown>;
+    confidence?: unknown;
+  };
+
   // Check for required fields
-  if (!response.summary || !response.nextSteps) {
+  if (!candidate.summary || !candidate.nextSteps) {
     return false;
   }
 
   // Check summary structure
-  const summary = response.summary;
+  const summary = candidate.summary;
   if (!summary.title || !Array.isArray(summary.pastEvents) || 
       !summary.currentQuest || !Array.isArray(summary.keyNPCsMet) || 
       !summary.lastKnownLocation) {
@@ -47,14 +53,18 @@ export function validateLLMResponse(response: any): boolean {
   }
 
   // Check nextSteps structure
-  const nextSteps = response.nextSteps;
+  const nextSteps = candidate.nextSteps;
   if (!nextSteps.immediateAction || !Array.isArray(nextSteps.shortTermGoals) || 
       !Array.isArray(nextSteps.tips)) {
     return false;
   }
 
   // Check confidence
-  if (typeof response.confidence !== 'number' || response.confidence < 0 || response.confidence > 1) {
+  if (
+    typeof candidate.confidence !== 'number' ||
+    candidate.confidence < 0 ||
+    candidate.confidence > 1
+  ) {
     return false;
   }
 

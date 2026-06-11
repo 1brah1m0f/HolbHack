@@ -1,4 +1,4 @@
-import { Game } from '@/types';
+import { Game, GameInfo } from '@/shared/types';
 
 // Supported games with their system prompts
 export const GAMES: Record<string, Game> = {
@@ -122,4 +122,21 @@ export function isValidGame(gameId: string): boolean {
 
 export function getAllGames(): Game[] {
   return Object.values(GAMES);
+}
+
+export function getAllGameInfo(): GameInfo[] {
+  return [
+    ...getAllGames().map(({ id, name, coverImage, supported }) => ({
+      id,
+      name,
+      coverImage,
+      supported,
+    })),
+    {
+      id: 'mass-effect-3',
+      name: 'Mass Effect 3',
+      coverImage: '/games/mass-effect-3.jpg',
+      supported: false,
+    },
+  ];
 }

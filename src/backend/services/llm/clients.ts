@@ -22,6 +22,7 @@ export class LLMClient {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
+      signal: request.signal,
       body: JSON.stringify({
         model: this.config.model || 'gpt-3.5-turbo',
         messages: request.messages,

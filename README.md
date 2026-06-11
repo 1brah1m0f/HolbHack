@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RPG Recall
+
+RPG Recall helps players remember where they left off in RPG games after a long break. It is a single Next.js app, but the source code is split into frontend, backend, and shared contract areas so branch work stays clean.
+
+## Tech Stack
+
+- Frontend: Next.js 16 App Router, React, TypeScript, Tailwind CSS
+- Backend: Next.js Route Handlers as a backend-for-frontend API layer
+- AI: OpenAI-compatible LLM client
+- State: React hooks
+
+## Source Layout
+
+```text
+src/
+├── app/                    # Next.js routing only
+│   ├── api/                # Thin API route adapters
+│   ├── layout.tsx          # Root layout
+│   ├── page.tsx            # Homepage route entry
+│   └── globals.css         # Global styles
+├── frontend/               # Client UI owned by frontend branches
+│   ├── components/         # UI and feature components
+│   ├── features/           # Screens and workflows
+│   └── hooks/              # Browser-side hooks
+├── backend/                # Server logic owned by backend branches
+│   ├── http/               # Route Handler implementations
+│   ├── services/           # LLM and game services
+│   └── validation/         # Request/response validation
+└── shared/                 # Contracts used by both sides
+    └── types/              # API and domain TypeScript types
+```
+
+## Branch Workflow
+
+- Frontend work: prefer `src/frontend`.
+- Backend work: prefer `src/backend`.
+- API contract work: update `src/shared/types` first, then update frontend/backend callers.
+- Next.js route files in `src/app` should stay small. Put real UI in `src/frontend` and real API logic in `src/backend`.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Set your LLM key in `.env.local`:
 
-## Learn More
+```env
+OPENAI_API_KEY=your-actual-api-key-here
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev`: start local development
+- `npm run build`: production build
+- `npm start`: start production server
+- `npm run lint`: run ESLint
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API
 
-## Deploy on Vercel
+- `GET /api/games`: returns supported and coming-soon games
+- `POST /api/recall`: analyzes a player's remembered progress and returns a structured recap
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Adding a Game
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Add game metadata and prompt data in `src/backend/services/games/games.ts`.
+2. Add any needed shared contract changes in `src/shared/types`.
+3. Add frontend display changes in `src/frontend`.

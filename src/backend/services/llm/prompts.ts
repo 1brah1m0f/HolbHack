@@ -1,5 +1,5 @@
 import { LLMMessage } from './types';
-import { getGameById } from '../games/games';
+import { getGameById } from '@/backend/services/games/games';
 
 export function buildRecallPrompt(gameId: string, userText: string): LLMMessage[] {
   const game = getGameById(gameId);

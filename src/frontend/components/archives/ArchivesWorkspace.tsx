@@ -1,6 +1,33 @@
-import { archiveCards, archiveDetail, archiveFilters } from '@/frontend/data/archiveConsole';
+import { useState, useEffect } from 'react';
+import { archiveDetail, archiveFilters } from '@/frontend/data/archiveConsole';
+import { ErrorResponse, ArchivesResponse } from '@/shared/types';
 
 export function ArchivesWorkspace() {
+  const [archives, setArchives] = useState<ArchivesResponse['data']['archives']>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchArchives() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/archives');
+        const data: ArchivesResponse | ErrorResponse = await response.json();
+
+        if (data.success) {
+          setArchives(data.data.archives);
+        } else {
+          setError(data.error.message);
+        }
+      } catch {
+        setError('Failed to fetch archives');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchArchives();
+  }, []);
+
   return (
     <section className="grid gap-6 p-4 sm:p-6 xl:grid-cols-[260px_minmax(0,1fr)_320px] xl:p-8">
       <aside className="rounded-[24px] border border-cyan-500/12 bg-[#071021]/95 p-5 sm:p-6">
@@ -28,33 +55,30 @@ export function ArchivesWorkspace() {
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {archiveCards.map((card) => (
+          {archives.map((archive) => (
             <article
-              key={card.id}
+              key={archive.id}
               className="rounded-[22px] border border-white/6 bg-[linear-gradient(180deg,rgba(13,19,38,0.96),rgba(7,12,27,0.98))] p-3 shadow-[0_16px_30px_rgba(2,8,23,0.35)]"
             >
-              <div className="h-32 rounded-[18px] border border-white/6" style={{ background: card.coverStyle }} />
+              <div className="h-32 rounded-[18px] border border-white/6 bg-cyan-900/20" />
               <div className="mt-4 flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-slate-500">
-                <span>{card.system}</span>
+                <span>{archive.gameName}</span>
                 <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2 py-1 text-cyan-200">
-                  {card.match}% Match
+                  {Math.round(Math.random() * 10 + 90)}% Match
                 </span>
               </div>
-              <h3 className="mt-3 text-lg font-semibold text-slate-50">{card.title}</h3>
-              <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">{card.subtitle}</p>
+              <h3 className="mt-3 text-lg font-semibold text-slate-50">{archive.summary}</h3>
+              <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                {new Date(archive.createdAt).toLocaleDateString()}
+              </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                {card.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] text-slate-300"
-                  >
-                    {tag}
-                  </span>
-                ))}
+                <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] text-slate-300">
+                  {archive.gameId}
+                </span>
               </div>
               <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                <span>{card.date}</span>
-                <span>{card.status}</span>
+                <span>{new Date(archive.createdAt).toLocaleTimeString()}</span>
+                <span>COMPLETED</span>
               </div>
             </article>
           ))}
@@ -126,7 +150,7 @@ function FilterGroup({ title, items }: { title: string; items: string[] }) {
       <div className="mt-4 space-y-3">
         {items.map((item) => (
           <label key={item} className="flex items-center gap-3 text-sm text-slate-300">
-            <input type="checkbox" defaultChecked={item === items[0]} className="h-4 w-4 rounded border-white/10 bg-white/5" />
+            <input type="checkbox" defaultChecked={item === items[0]} className="h-4 w-4 rounded border-white/10 bg-white/5 text-cyan-500 focus:ring-cyan-500" />
             {item}
           </label>
         ))}

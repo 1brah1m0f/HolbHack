@@ -68,6 +68,22 @@ export interface GameInfo {
   supported: boolean;
 }
 
+export interface ArchiveItem {
+  id: string;
+  gameId: string;
+  gameName: string;
+  userText: string;
+  summary: string;
+  createdAt: string;
+}
+
+export interface ArchivesResponse {
+  success: true;
+  data: {
+    archives: ArchiveItem[];
+  };
+}
+
 // Union type for all possible API responses
 export type ApiResponse = RecallResponse | ErrorResponse;
 export type GamesApiResponse = GamesResponse | ErrorResponse;

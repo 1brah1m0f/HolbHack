@@ -11,7 +11,7 @@ export function useGames() {
   useEffect(() => {
     async function fetchGames() {
       try {
-        const response = await fetch('/api/games');
+        const response = await fetch('http://127.0.0.1:8000/api/games');
         const data: GamesResponse | ErrorResponse = await response.json();
 
         if (data.success) {

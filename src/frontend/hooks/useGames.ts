@@ -19,7 +19,7 @@ export function useGames() {
         } else {
           setError(data.error.message);
         }
-      } catch (err) {
+      } catch {
         setError('Failed to fetch games');
       } finally {
         setLoading(false);

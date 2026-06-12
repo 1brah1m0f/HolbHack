@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       const jsonString = jsonMatch ? jsonMatch[0] : content;
       parsedResponse = JSON.parse(jsonString);
-    } catch (error) {
+    } catch {
       console.error('Failed to parse LLM response:', llmResponse.content);
 
       return NextResponse.json(

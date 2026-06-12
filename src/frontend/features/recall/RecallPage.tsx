@@ -1,21 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { EmptyState } from '@/frontend/components/EmptyState';
-import { ErrorState } from '@/frontend/components/ErrorState';
-import { GameSelector } from '@/frontend/components/GameSelector';
-import { LoadingState } from '@/frontend/components/LoadingState';
-import { MemoryInput } from '@/frontend/components/MemoryInput';
-import { ResultCards } from '@/frontend/components/ResultCards';
-import { Button } from '@/frontend/components/ui/Button';
+import { useMemo, useState } from 'react';
+import { ArchivesWorkspace } from '@/frontend/components/archives/ArchivesWorkspace';
+import { GameIndexWorkspace } from '@/frontend/components/index/GameIndexWorkspace';
+import { ConsoleShell } from '@/frontend/components/layout/ConsoleShell';
+import { ReconstructWorkspace } from '@/frontend/components/reconstruct/ReconstructWorkspace';
+import { SettingsWorkspace } from '@/frontend/components/settings/SettingsWorkspace';
+import { fallbackGames, type WorkspaceTab } from '@/frontend/data/archiveConsole';
 import { useGames } from '@/frontend/hooks/useGames';
 import { useRecall } from '@/frontend/hooks/useRecall';
-import { RecallRequest } from '@/shared/types';
+import type { RecallRequest } from '@/shared/types';
 
 export function RecallPage() {
-  const { games, loading: gamesLoading } = useGames();
-  const { recall, data, loading, error, startTime } = useRecall();
-
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('reconstruct');
   const [selectedGame, setSelectedGame] = useState('');
   const [userText, setUserText] = useState('');
   const [validationErrors, setValidationErrors] = useState<{
@@ -23,17 +20,22 @@ export function RecallPage() {
     text?: string;
   }>({});
 
+  const { games, error: gamesError } = useGames();
+  const { recall, data, loading, error } = useRecall();
+
+  const availableGames = useMemo(() => (games.length > 0 ? games : fallbackGames), [games]);
+
   const handleRecall = async () => {
     const errors: { game?: string; text?: string } = {};
 
     if (!selectedGame) {
-      errors.game = 'Please select a game';
+      errors.game = 'Bir oyun secin.';
     }
 
-    if (userText.length < 10) {
-      errors.text = 'Please provide more details (min 10 characters)';
-    } else if (userText.length > 2000) {
-      errors.text = 'Keep it under 2000 characters';
+    if (userText.trim().length < 10) {
+      errors.text = 'En az 10 simvol xatire metni daxil edin.';
+    } else if (userText.trim().length > 2000) {
+      errors.text = 'Metn 2000 simvoldan uzun olmamalidir.';
     }
 
     setValidationErrors(errors);
@@ -44,104 +46,42 @@ export function RecallPage() {
 
     await recall({
       gameId: selectedGame,
-      userText,
+      userText: userText.trim(),
     } satisfies RecallRequest);
   };
 
-  const handleRetry = () => {
-    setValidationErrors({});
-    handleRecall();
-  };
-
-  const handleReset = () => {
-    setSelectedGame('');
+  const handleClear = () => {
     setUserText('');
     setValidationErrors({});
   };
 
-  if (gamesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingState />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            RPG Recall
-          </h1>
-          <p className="text-blue-200 text-lg">
-            Never forget where you left off in your favorite RPG games
-          </p>
-        </header>
-
-        <div className="max-w-4xl mx-auto">
-          {!data && !loading && (
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
-              <GameSelector
-                games={games}
-                selectedGame={selectedGame}
-                onGameChange={setSelectedGame}
-                error={validationErrors.game}
-              />
-
-              <div className="mt-6">
-                <MemoryInput
-                  value={userText}
-                  onChange={setUserText}
-                  error={validationErrors.text}
-                />
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <Button
-                  onClick={handleRecall}
-                  variant="primary"
-                  size="lg"
-                  disabled={!selectedGame || userText.length < 10}
-                >
-                  Recall My Journey
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {loading && <LoadingState startTime={startTime || undefined} />}
-
-          {error && !loading && (
-            <ErrorState error={error} onRetry={handleRetry} retryable={true} />
-          )}
-
-          {data && !loading && (
-            <div>
-              <ResultCards data={data} />
-
-              <div className="mt-6 flex justify-center gap-4">
-                <Button onClick={handleReset} variant="outline">
-                  Start Over
-                </Button>
-                <Button onClick={handleRetry} variant="primary">
-                  Try Again
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {!data &&
-            !loading &&
-            !error &&
-            selectedGame === '' &&
-            userText === '' && <EmptyState />}
-        </div>
-
-        <footer className="text-center mt-12 text-blue-200 text-sm">
-          <p>Powered by AI - Built for Hackathon</p>
-        </footer>
-      </div>
-    </div>
+    <ConsoleShell activeTab={activeTab} onTabChange={setActiveTab}>
+      {activeTab === 'reconstruct' ? (
+        <ReconstructWorkspace
+          games={availableGames}
+          selectedGame={selectedGame}
+          userText={userText}
+          loading={loading}
+          validationErrors={validationErrors}
+          gamesError={gamesError}
+          recallError={error}
+          result={data}
+          onSelectedGameChange={(value) => {
+            setSelectedGame(value);
+            setValidationErrors((current) => ({ ...current, game: undefined }));
+          }}
+          onUserTextChange={(value) => {
+            setUserText(value);
+            setValidationErrors((current) => ({ ...current, text: undefined }));
+          }}
+          onReconstruct={handleRecall}
+          onClear={handleClear}
+        />
+      ) : null}
+      {activeTab === 'archives' ? <ArchivesWorkspace /> : null}
+      {activeTab === 'game-index' ? <GameIndexWorkspace /> : null}
+      {activeTab === 'settings' ? <SettingsWorkspace /> : null}
+    </ConsoleShell>
   );
 }

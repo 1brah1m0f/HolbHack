@@ -38,7 +38,7 @@ export function useRecall(): UseRecallResult {
       } else {
         setError(result.error.message);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to process your request. Please try again.');
     } finally {
       setLoading(false);

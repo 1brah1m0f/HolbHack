@@ -14,7 +14,24 @@ Guidelines:
 5. Provide next steps that are spoiler-free - focus on immediate actions and general direction.
 6. Include 2-3 helpful tips that don't reveal future plot points.
 7. If their description is too vague, ask for clarification about specific details.
-8. Return your response as a JSON object.
+8. You MUST return your response as a JSON object adhering exactly to this structure:
+{
+  "summary": {
+    "title": "Short title",
+    "pastEvents": ["event 1", "event 2"],
+    "currentQuest": "Quest name",
+    "keyNPCsMet": ["NPC 1"],
+    "lastKnownLocation": "Location"
+  },
+  "nextSteps": {
+    "immediateAction": "Action",
+    "shortTermGoals": ["Goal 1", "Goal 2"],
+    "tips": ["Tip 1"],
+    "warnings": []
+  },
+  "confidence": 0.9,
+  "requiresClarification": null
+}
 
 Important: Never include spoilers about future events or endings. Focus only on what they've described and immediate next steps."""
     },
@@ -33,7 +50,24 @@ Guidelines:
 5. Provide next steps that are spoiler-free - focus on immediate actions and general direction.
 6. Include 2-3 helpful tips that don't reveal future plot points.
 7. If their description is too vague, ask for clarification about specific details.
-8. Return your response as a JSON object.
+8. You MUST return your response as a JSON object adhering exactly to this structure:
+{
+  "summary": {
+    "title": "Short title",
+    "pastEvents": ["event 1", "event 2"],
+    "currentQuest": "Quest name",
+    "keyNPCsMet": ["NPC 1"],
+    "lastKnownLocation": "Location"
+  },
+  "nextSteps": {
+    "immediateAction": "Action",
+    "shortTermGoals": ["Goal 1", "Goal 2"],
+    "tips": ["Tip 1"],
+    "warnings": []
+  },
+  "confidence": 0.9,
+  "requiresClarification": null
+}
 
 Important: Never include spoilers about future events or endings. Focus only on what they've described and immediate next steps."""
     },
@@ -52,7 +86,24 @@ Guidelines:
 5. Provide next steps that are spoiler-free - focus on immediate actions and general direction.
 6. Include 2-3 helpful tips that don't reveal future plot points.
 7. If their description is too vague, ask for clarification about specific details.
-8. Return your response as a JSON object.
+8. You MUST return your response as a JSON object adhering exactly to this structure:
+{
+  "summary": {
+    "title": "Short title",
+    "pastEvents": ["event 1", "event 2"],
+    "currentQuest": "Quest name",
+    "keyNPCsMet": ["NPC 1"],
+    "lastKnownLocation": "Location"
+  },
+  "nextSteps": {
+    "immediateAction": "Action",
+    "shortTermGoals": ["Goal 1", "Goal 2"],
+    "tips": ["Tip 1"],
+    "warnings": []
+  },
+  "confidence": 0.9,
+  "requiresClarification": null
+}
 
 Important: Never include spoilers about future events or endings. Focus only on what they've described and immediate next steps."""
     }

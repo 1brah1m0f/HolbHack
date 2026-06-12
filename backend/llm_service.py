@@ -1,13 +1,22 @@
 import os
 from typing import List, Optional
 from pydantic import BaseModel
-from openai import AsyncOpenAI
+import google.generativeai as genai
 from games_data import GAMES
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", "dummy-key-for-local-dev"))
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+# Fetch available models to find the correct one
+for m in genai.list_models():
+  if 'generateContent' in m.supported_generation_methods:
+    print(f"Available model: {m.name}")
+
+# Try the standard flash model
+model = genai.GenerativeModel('models/gemini-2.5-flash')
 
 class Summary(BaseModel):
     title: str
@@ -36,15 +45,24 @@ async def generate_recall(game_id: str, user_text: str) -> RecallLLMResponse:
     system_prompt = game["systemPrompt"]
     user_prompt = f"Here is what I remember:\n\n{user_text}"
     
-    completion = await client.beta.chat.completions.parse(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        response_format=RecallLLMResponse,
-        temperature=0.7,
-        max_tokens=1000
+    response = model.generate_content(
+        f"SYSTEM INSTRUCTIONS:\n{system_prompt}\n\nUSER PROMPT:\n{user_prompt}",
+        generation_config=genai.GenerationConfig(
+            response_mime_type="application/json",
+            temperature=0.7,
+        )
     )
     
-    return completion.choices[0].message.parsed
+    # parse the content using JSON
+    content = response.text
+    try:
+        # Extract json part if it's wrapped in markdown code blocks
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0].strip()
+        elif "```" in content:
+            content = content.split("```")[1].split("```")[0].strip()
+            
+        parsed_dict = json.loads(content)
+        return RecallLLMResponse(**parsed_dict)
+    except Exception as e:
+        raise ValueError(f"Failed to parse LLM response: {e}\nContent: {content}")
